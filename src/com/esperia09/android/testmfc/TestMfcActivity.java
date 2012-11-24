@@ -135,6 +135,9 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
         }
     }
     
+    /**
+     * FIXME タイミングを一つずらす。onTabChangedでFragmentを呼ぶと切り替え前のものが出てくる問題の対処
+     */
     private void callAvailable() {
         new Handler().post(new Runnable() {
             @Override

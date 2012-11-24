@@ -135,7 +135,7 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     /**
      * Felicaチップをクローズします。
      * 
-     * @return
+     * @return 正常にクローズ出来た場合はtrue, 例外が発生した場合はfalseを返します。
      */
     public boolean close() {
         try {
@@ -170,6 +170,7 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
 
     /**
      * Push送信によって、ブラウザを起動します。
+     * 実行は非同期で行うべきです。
      * 
      * @return
      */
@@ -193,7 +194,8 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     }
 
     /**
-     * Push送信によって、ブラウザを起動します。
+     * Push送信によって、メーラーを起動します。
+     * 実行は非同期で行うべきです。
      * 
      * @return
      */
@@ -220,6 +222,7 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
 
     /**
      * Push送信によって、ブラウザを起動します。
+     * 実行は非同期で行うべきです。
      */
     public boolean pushStartIntent(Intent intent) {
         PushIntentSegment seg = new PushIntentSegment(intent);
@@ -238,7 +241,6 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
 
     private boolean pushStartIntent(PushSegment seg) {
         try {
-
             mFelica.push(seg);
             return true;
         } catch (IllegalArgumentException e) {
@@ -252,6 +254,11 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
         return false;
     }
 
+    /**
+     * FeliCaインスタンスを取得します。サービスに接続できていない場合、nullになります。
+     * 
+     * @return {@link Felica}
+     */
     public Felica getFelica() {
         return mFelica;
     }
@@ -266,17 +273,25 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
          */
         public void onServiceConnected();
 
+        /**
+         * FeliCaサービスから切断された時に呼ばれます。
+         */
         public void onServiceDisconnected();
 
         /**
          * MFCにて例外エラーが発生した時に呼ばれます。
          * 
-         * @param state {@link MfcAccesser}クラスの
+         * @param state {@link FelicaState}
          * @param e
          */
         public void onMfcException(int state, Exception e);
     }
 
+    /**
+     * FeliCaチップの利用が完了した際に呼ばれます。
+     * 
+     * @author esperia
+     */
     public interface OnMfcActivatedListener {
         /**
          * MFCにてactivateに成功した時に呼ばれます。
@@ -284,14 +299,44 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
         public void onActivated();
     }
 
+    /**
+     * FeliCaチップの利用状況を保持します。
+     * 
+     * @author esperia
+     */
     public interface FelicaState {
+        /**
+         * サービスから切断している状態。
+         */
         public static final int DISCONNECTED = 0x00;
+        /**
+         * サービスに接続している時
+         */
         public static final int CONNECT = 0x01;
+        /**
+         * FeliCaチップ利用開始時
+         */
         public static final int ACTIVATE = 0x02;
+        /**
+         * FeliCaチップをオープンしている時
+         */
         public static final int OPEN = 0x03;
+        /**
+         * フェリカチップをクローズした時
+         * 
+         * @deprecated use {@link #ACTIVATE}
+         */
         public static final int CLOSE = 0x04;
+        /**
+         * フェリカチップの利用を終了している時
+         * 
+         * @deprecated use {@link #CONNECT}
+         */
         public static final int INACTIVATE = 0x05;
 
+        /**
+         * フェリカにPUSHした時
+         */
         public static final int PUSH = 0x10;
     }
 
@@ -309,6 +354,12 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
         }
     }
 
+    /**
+     * 現在フェリカチップの利用状態がどの状態にあるかを取得します。
+     * 
+     * @see {@link FelicaState}
+     * @return
+     */
     public int getState() {
         return mState;
     }
