@@ -26,7 +26,6 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
 
     private Context mContext;
     private OnMfcListener mListener;
-    private boolean mConnected = false;
     private Felica mFelica;
     private int mState = FelicaState.DISCONNECTED;
     private OnMfcActivatedListener mActivatedListener;
@@ -43,7 +42,7 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
      * FeliCaサービスに接続します。
      */
     public void connect() {
-        if (mConnected) {
+        if (mFelica != null) {
             // 接続済み
             return;
         }
@@ -64,14 +63,9 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
      */
     public void disconnect() {
         mState = FelicaState.DISCONNECTED;
-        if (!mConnected) {
-            return;
-        }
 
         mContext.unbindService(this);
-
-        // 接続状態を解除
-        mConnected = false;
+        mFelica = null;
     }
 
     @Override
@@ -79,7 +73,6 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
         mState = FelicaState.CONNECT;
         // Felicaとの接続が確立されたので、Felicaインスタンスを取得する
         mFelica = ((Felica.LocalBinder) service).getInstance();
-        mConnected = true;
 
         mListener.onServiceConnected();
     }
@@ -89,7 +82,6 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
         mState = FelicaState.DISCONNECTED;
         // Felicaの設定解除
         mFelica = null;
-        mConnected = false;
 
         if (mListener != null) {
             mListener.onServiceDisconnected();
@@ -107,9 +99,9 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
             }
         } catch (FelicaException e) {
             MfcCause.handleFelicaException(e, mFelica);
-            mListener.onMfcException(FelicaState.ACTIVATE, e);
+            mListener.onMfcException(mState, e);
         } catch (Exception e) {
-            mListener.onMfcException(FelicaState.ACTIVATE, e);
+            mListener.onMfcException(mState, e);
         }
     }
 
@@ -125,9 +117,9 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
             return true;
         } catch (FelicaException e) {
             MfcCause.handleFelicaException(e, mFelica);
-            mListener.onMfcException(FelicaState.OPEN, e);
+            mListener.onMfcException(mState, e);
         } catch (Exception e) {
-            mListener.onMfcException(FelicaState.OPEN, e);
+            mListener.onMfcException(mState, e);
         }
         return false;
     }
@@ -140,13 +132,13 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     public boolean close() {
         try {
             mFelica.close();
-            mState = FelicaState.CLOSE;
+            mState = FelicaState.ACTIVATE;
             return true;
         } catch (FelicaException e) {
             MfcCause.handleFelicaException(e, mFelica);
-            mListener.onMfcException(FelicaState.CLOSE, e);
+            mListener.onMfcException(mState, e);
         } catch (Exception e) {
-            mListener.onMfcException(FelicaState.CLOSE, e);
+            mListener.onMfcException(mState, e);
         }
         return false;
     }
@@ -160,12 +152,12 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     public boolean forceInactivate() {
         try {
             mFelica.close();
-            mState = FelicaState.CLOSE;
+            mState = FelicaState.ACTIVATE;
         } catch (Exception e) {
         }
         try {
             mFelica.inactivateFelica();
-            mState = FelicaState.INACTIVATE;
+            mState = FelicaState.CONNECT;
         } catch (Exception e) {
         }
         return false;
@@ -177,13 +169,13 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     public boolean inactivateFelica() {
         try {
             mFelica.inactivateFelica();
-            mState = FelicaState.INACTIVATE;
+            mState = FelicaState.CONNECT;
             return true;
         } catch (FelicaException e) {
             MfcCause.handleFelicaException(e, mFelica);
-            mListener.onMfcException(FelicaState.INACTIVATE, e);
+            mListener.onMfcException(mState, e);
         } catch (Exception e) {
-            mListener.onMfcException(FelicaState.INACTIVATE, e);
+            mListener.onMfcException(mState, e);
         }
         return false;
     }

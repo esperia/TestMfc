@@ -103,9 +103,7 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
         Logger.e("onMfcException", e);
         switch (state) {
             case FelicaState.ACTIVATE:
-            case FelicaState.INACTIVATE:
             case FelicaState.OPEN:
-            case FelicaState.CLOSE:
                 mMfc.forceInactivate();
                 break;
         }

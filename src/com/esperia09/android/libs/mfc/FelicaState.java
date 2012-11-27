@@ -22,14 +22,6 @@ public interface FelicaState {
      * FeliCaチップをオープンしている時
      */
     public static final int OPEN = 0x03;
-    /**
-     * フェリカチップをクローズした時
-     */
-    public static final int CLOSE = 0x04;
-    /**
-     * フェリカチップの利用を終了している時
-     */
-    public static final int INACTIVATE = 0x05;
 
     /**
      * フェリカにPUSHした時
