@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.esperia09.android.testmfc.MfcAccesser;
+import com.esperia09.android.libs.mfc.MfcAccesser;
 import com.esperia09.android.testmfc.R;
 import com.esperia09.android.testmfc.TestMfcActivity.OnMfcEnabledListener;
 

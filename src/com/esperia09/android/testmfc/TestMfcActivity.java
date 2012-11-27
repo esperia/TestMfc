@@ -2,18 +2,16 @@
 package com.esperia09.android.testmfc;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTabHost;
-import android.util.Log;
-import android.view.Menu;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.Toast;
 
-import com.esperia09.android.testmfc.MfcAccesser.FelicaState;
-import com.esperia09.android.testmfc.MfcAccesser.OnMfcActivatedListener;
-import com.esperia09.android.testmfc.MfcAccesser.OnMfcListener;
+import com.esperia09.android.libs.mfc.FelicaState;
+import com.esperia09.android.libs.mfc.MfcAccesser;
+import com.esperia09.android.libs.mfc.MfcAccesser.OnMfcActivatedListener;
+import com.esperia09.android.libs.mfc.MfcAccesser.OnMfcListener;
 import com.esperia09.android.testmfc.fragments.IntentPushFragment;
 import com.esperia09.android.testmfc.fragments.MailPushFragment;
 import com.esperia09.android.testmfc.fragments.WebPushFragment;
@@ -33,6 +31,7 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
 
         setContentView(R.layout.activity_test_mfc);
 
+        // フラグメントのタブを追加します。
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 
@@ -52,7 +51,7 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
 
         mMfc.connect();
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -85,18 +84,11 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
         mMfc.close();
         mMfc.inactivateFelica();
     }
-    
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mMfc.disconnect();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_test_mfc, menu);
-        return true;
     }
 
     @Override
@@ -108,12 +100,13 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
 
     @Override
     public void onMfcException(int state, Exception e) {
-        Log.e("Push", "onMfcException", e);
+        Logger.e("onMfcException", e);
         switch (state) {
+            case FelicaState.ACTIVATE:
+            case FelicaState.INACTIVATE:
             case FelicaState.OPEN:
-                mMfc.inactivateFelica();
-                break;
-            default:
+            case FelicaState.CLOSE:
+                mMfc.forceInactivate();
                 break;
         }
         Toast.makeText(getApplicationContext(), "error occured!=" + e.getMessage(),
@@ -122,7 +115,7 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
 
     public interface OnMfcEnabledListener {
         /**
-         * OnMfcEnabled
+         * FeliCaチップのオープンが終わった時、これらを実装しているFragmentに対して通知を行います。
          */
         public void onAvailable(MfcAccesser mfc);
     }
@@ -131,27 +124,12 @@ public class TestMfcActivity extends FragmentActivity implements OnMfcListener,
     public void onTabChanged(String tag) {
         int state = mMfc.getState();
         if (state == FelicaState.OPEN) {
-            callAvailable();
-        }
-    }
-    
-    /**
-     * FIXME タイミングを一つずらす。onTabChangedでFragmentを呼ぶと切り替え前のものが出てくる問題の対処
-     */
-    private void callAvailable() {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                Fragment f = getSupportFragmentManager().findFragmentById(R.id.realtabcontent);
-                if (f instanceof OnMfcEnabledListener) {
-                    OnMfcEnabledListener l = (OnMfcEnabledListener) f;
-                    l.onAvailable(mMfc);
-                }
+            // タブ変更後のFragmentを呼び出して、MFCが有効であることを通知する
+            Fragment f = getSupportFragmentManager().findFragmentByTag(tag);
+            if (f instanceof OnMfcEnabledListener) {
+                OnMfcEnabledListener l = (OnMfcEnabledListener) f;
+                l.onAvailable(mMfc);
             }
-        });
-    }
-
-    public MfcAccesser getMfc() {
-        return mMfc;
+        }
     }
 }

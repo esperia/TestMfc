@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.esperia09.android.testmfc.MfcAccesser;
+import com.esperia09.android.libs.mfc.MfcAccesser;
 import com.esperia09.android.testmfc.R;
 import com.esperia09.android.testmfc.TestMfcActivity.OnMfcEnabledListener;
 
@@ -24,7 +24,7 @@ public class MailPushFragment extends BaseFragment implements OnClickListener, O
     private EditText mEditCc;
     private EditText mEditSubject;
     private EditText mEditBody;
-
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.frg_mailpush, null);

@@ -1,5 +1,5 @@
 
-package com.esperia09.android.testmfc;
+package com.esperia09.android.libs.mfc;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -152,6 +152,26 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
     }
 
     /**
+     * Felicaチップを閉じ、利用を終了します。
+     * {@link OnMfcListener#onMfcException(int, Exception)}等が発生した歳に利用します。
+     * 
+     * @return 正常にクローズ出来た場合はtrue, 例外が発生した場合はfalseを返します。
+     */
+    public boolean forceInactivate() {
+        try {
+            mFelica.close();
+            mState = FelicaState.CLOSE;
+        } catch (Exception e) {
+        }
+        try {
+            mFelica.inactivateFelica();
+            mState = FelicaState.INACTIVATE;
+        } catch (Exception e) {
+        }
+        return false;
+    }
+
+    /**
      * Felicaの利用終了処理を実行します。
      */
     public boolean inactivateFelica() {
@@ -297,47 +317,6 @@ public class MfcAccesser implements ServiceConnection, FelicaEventListener {
          * MFCにてactivateに成功した時に呼ばれます。
          */
         public void onActivated();
-    }
-
-    /**
-     * FeliCaチップの利用状況を保持します。
-     * 
-     * @author esperia
-     */
-    public interface FelicaState {
-        /**
-         * サービスから切断している状態。
-         */
-        public static final int DISCONNECTED = 0x00;
-        /**
-         * サービスに接続している時
-         */
-        public static final int CONNECT = 0x01;
-        /**
-         * FeliCaチップ利用開始時
-         */
-        public static final int ACTIVATE = 0x02;
-        /**
-         * FeliCaチップをオープンしている時
-         */
-        public static final int OPEN = 0x03;
-        /**
-         * フェリカチップをクローズした時
-         * 
-         * @deprecated use {@link #ACTIVATE}
-         */
-        public static final int CLOSE = 0x04;
-        /**
-         * フェリカチップの利用を終了している時
-         * 
-         * @deprecated use {@link #CONNECT}
-         */
-        public static final int INACTIVATE = 0x05;
-
-        /**
-         * フェリカにPUSHした時
-         */
-        public static final int PUSH = 0x10;
     }
 
     @Override

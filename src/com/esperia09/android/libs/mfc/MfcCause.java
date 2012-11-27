@@ -1,4 +1,5 @@
-package com.esperia09.android.testmfc;
+
+package com.esperia09.android.libs.mfc;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -7,6 +8,10 @@ import com.esperia09.android.testmfc.utils.Logger;
 import com.felicanetworks.mfc.Felica;
 import com.felicanetworks.mfc.FelicaException;
 
+/**
+ * エラーの原因をログに出力するためのクラスです。
+ * @see <a href="http://www.felicanetworks.co.jp/tech/adhoc.html">SDK</a>
+ */
 public class MfcCause {
 
     /**
@@ -97,7 +102,7 @@ public class MfcCause {
      * ・ID_UNKNOWN_ERRORが発生した場合に、FeliCaチップのクローズ、およびFeliCaチップの利用終了処理を実施
      * ・(ID_OPEN_ERROR, TYPE_NOT_IC_CHIP_FORMATTING)が発生した場合に、FeliCaチップの利用終了処理を実施
      * ・エラー内容を画面に表示
-     *
+     * 
      * @param e 処理対象のFelicaException
      */
     public static void handleFelicaException(FelicaException e, Felica felica) {
@@ -108,28 +113,28 @@ public class MfcCause {
         String additionalMsg = null;
 
         switch (e.getID()) {
-        case FelicaException.ID_UNKNOWN_ERROR:
-            // 未知のエラーが発生
-            // 復帰不能なのでFelica#close()、#inactivateFelica()を実行
-            try {
-                felica.close();
-                felica.inactivateFelica();
-            } catch (FelicaException e1) {
-                // 強制終了処理に失敗した場合、キャッチした例外を無視
-            }
-            break;
-        case FelicaException.ID_OPEN_ERROR:
-            if (e.getType() == FelicaException.TYPE_NOT_IC_CHIP_FORMATTING) {
-                // Felica#inactivateFelica()を実行し、FeliCaチップの利用終了処理を実施
+            case FelicaException.ID_UNKNOWN_ERROR:
+                // 未知のエラーが発生
+                // 復帰不能なのでFelica#close()、#inactivateFelica()を実行
                 try {
+                    felica.close();
                     felica.inactivateFelica();
                 } catch (FelicaException e1) {
-                    // 利用終了処理に失敗した場合、キャッチした例外を無視
+                    // 強制終了処理に失敗した場合、キャッチした例外を無視
                 }
-            }
-            break;
-        default:
-            break;
+                break;
+            case FelicaException.ID_OPEN_ERROR:
+                if (e.getType() == FelicaException.TYPE_NOT_IC_CHIP_FORMATTING) {
+                    // Felica#inactivateFelica()を実行し、FeliCaチップの利用終了処理を実施
+                    try {
+                        felica.inactivateFelica();
+                    } catch (FelicaException e1) {
+                        // 利用終了処理に失敗した場合、キャッチした例外を無視
+                    }
+                }
+                break;
+            default:
+                break;
         }
 
         // エラー内容をViewに表示
@@ -139,29 +144,29 @@ public class MfcCause {
 
         // 追加メッセージ作成
         switch (e.getID()) {
-        case FelicaException.ID_UNKNOWN_ERROR:
-            // 復帰困難なエラーが発生した旨を表示
-            additionalMsg = "(Non-recoverable error)";
-            break;
-        case FelicaException.ID_READ_ERROR:
-        case FelicaException.ID_WRITE_ERROR:
-        case FelicaException.ID_GET_NODE_INFORMATION_ERROR:
-        case FelicaException.ID_GET_PRIVACY_NODE_INFORMATION_ERROR:
-        case FelicaException.ID_GET_BLOCK_COUNT_INFORMATION_ERROR:
-        case FelicaException.ID_SET_PRIVACY_ERROR:
-            // ステータスフラグ取得
-            additionalMsg = "Status Flag1:" + e.getStatusFlag1() + ", StatusFlag2:"
-                    + e.getStatusFlag2();
-            break;
-        default:
-            break;
+            case FelicaException.ID_UNKNOWN_ERROR:
+                // 復帰困難なエラーが発生した旨を表示
+                additionalMsg = "(Non-recoverable error)";
+                break;
+            case FelicaException.ID_READ_ERROR:
+            case FelicaException.ID_WRITE_ERROR:
+            case FelicaException.ID_GET_NODE_INFORMATION_ERROR:
+            case FelicaException.ID_GET_PRIVACY_NODE_INFORMATION_ERROR:
+            case FelicaException.ID_GET_BLOCK_COUNT_INFORMATION_ERROR:
+            case FelicaException.ID_SET_PRIVACY_ERROR:
+                // ステータスフラグ取得
+                additionalMsg = "Status Flag1:" + e.getStatusFlag1() + ", StatusFlag2:"
+                        + e.getStatusFlag2();
+                break;
+            default:
+                break;
         }
 
         if (additionalMsg != null) {
             errMsg += "\n";
             errMsg += additionalMsg;
         }
-        
+
         Logger.e(errMsg);
     }
 
