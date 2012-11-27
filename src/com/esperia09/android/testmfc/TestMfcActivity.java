@@ -14,9 +14,9 @@ import android.widget.Toast;
 import com.esperia09.android.testmfc.MfcAccesser.FelicaState;
 import com.esperia09.android.testmfc.MfcAccesser.OnMfcActivatedListener;
 import com.esperia09.android.testmfc.MfcAccesser.OnMfcListener;
-import com.esperia09.android.testmfc.tabs.IntentPushFragment;
-import com.esperia09.android.testmfc.tabs.MailPushFragment;
-import com.esperia09.android.testmfc.tabs.WebPushFragment;
+import com.esperia09.android.testmfc.fragments.IntentPushFragment;
+import com.esperia09.android.testmfc.fragments.MailPushFragment;
+import com.esperia09.android.testmfc.fragments.WebPushFragment;
 import com.esperia09.android.testmfc.utils.Logger;
 
 public class TestMfcActivity extends FragmentActivity implements OnMfcListener,

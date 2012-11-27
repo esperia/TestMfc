@@ -1,4 +1,4 @@
-package com.esperia09.android.testmfc;
+package com.esperia09.android.testmfc.fragments;
 
 import android.app.Activity;
 import android.content.Context;
